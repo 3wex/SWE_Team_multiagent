@@ -1,79 +1,18 @@
-## Overly Dramatic Command‑Line Calculator – Technical Specification
+Specifications for Overly Dramatic Command-Line Calculator:
 
-### Overview
-Create a Python command‑line application that performs basic arithmetic (addition, subtraction, multiplication, division) on two user‑provided numbers. The program’s personality is deliberately sarcastic and “overly dramatic”, expressing disdain for doing math. All interactions are via standard input/output.
+I. Introduction
+The calculator will be a command-line application built in Python, designed to perform basic arithmetic operations (addition, subtraction, multiplication, and division) on two numbers.
 
-### Functional Requirements
-1. **User Input Sequence**
-   - Prompt 1: `Enter the first number:`
-   - Prompt 2: `Enter the second number:`
-   - Prompt 3: `Enter an operator (+, -, *, /):`
-   - Input validation must be performed after each entry. If validation fails, display a dramatic complaint and re‑prompt.
+II. Functional Requirements
+1. The calculator will take two numbers and an operation as input from the user.
+2. It will then perform the specified operation and display the result.
+3. The calculator will express reluctance and dissatisfaction with performing math operations, using dramatic language to convey its 'distaste' for the task.
+4. For each operation, the calculator will output a unique, overly dramatic message before and after performing the calculation.
 
-2. **Dramatic Complaints**
-   - Before displaying the correct result, output one of the following (chosen randomly or sequentially):
-     - "Ugh, fine..."
-     - "Do I have to?"
-     - "You couldn't do this in your head?"
-     - "Why am I even here?"
-   - The complaint must appear **once** per successful calculation.
+III. Edge Cases
+1. Division by zero: The calculator will output a dramatic message expressing its 'horror' at being asked to perform such an 'atrocious' act, and then exit the program.
+2. Non-numeric input: The calculator will output a dramatic message expressing its 'disgust' at the user's 'incompetence', and then exit the program.
 
-3. **Arithmetic Operations**
-   - Perform the operation indicated by the operator on the two numbers.
-   - Support floating‑point numbers as well as integers.
-   - Output format: `Result: <value>` (after the dramatic complaint).
-
-4. **Division by Zero Handling**
-   - If the operator is `/` and the second number is `0`:
-     - Print: `Mathematical menace! I refuse to divide by zero.`
-     - Exit the program with a non‑zero status code.
-
-5. **Large Number Handling**
-   - If **either** input number exceeds `1000` (absolute value > 1000):
-     - Print: `These numbers are too heavy for my delicate brain.`
-     - Do **not** perform any calculation; terminate the program gracefully (exit code 0).
-
-### Non‑Functional Requirements
-- **Language**: Python 3.9+.
-- **Execution**: Run via `python calculator.py` from the command line.
-- **User Experience**: All prompts and messages must be plain text, no GUI.
-- **Randomness** (optional): If random selection of complaints is implemented, use the standard `random` module with a fixed seed for reproducibility in tests.
-
-### Edge Cases & Validation
-| Scenario | Expected Behavior |
-|----------|-------------------|
-| Non‑numeric input for a number | Print a dramatic complaint (e.g., `Whoa, that's not a number! Try again.`) and re‑prompt. |
-| Invalid operator (anything other than +, -, *, /) | Print a dramatic complaint (e.g., `Seriously? That's not an operator.`) and re‑prompt. |
-| Division by zero | Print the “mathematical menace” message and exit with status 1. |
-| Number > 1000 (or < -1000) | Print the “too heavy” message and exit with status 0. |
-| Leading/trailing whitespace in input | Strip whitespace before validation. |
-| Empty input (just press Enter) | Treat as invalid, show complaint, re‑prompt. |
-
-### Flow Diagram (textual)
-1. Prompt first number → validate → if >1000 → heavy‑number message → exit.
-2. Prompt second number → validate → if >1000 → heavy‑number message → exit.
-3. Prompt operator → validate.
-4. If operator is `/` and second number == 0 → menace message → exit(1).
-5. Print a dramatic complaint.
-6. Compute result.
-7. Print `Result: <value>`.
-8. End program.
-
-### Test Cases (Specification Only)
-1. **Normal addition**: Input `5`, `3`, `+` → complaint → `Result: 8`.
-2. **Division by zero**: Input `10`, `0`, `/` → menace message → program exits.
-3. **Large number**: Input `1500`, `2`, `*` → heavy‑number message → program exits.
-4. **Invalid operator**: Input `4`, `5`, `x` → complaint about operator → re‑prompt until valid.
-5. **Non‑numeric first number**: Input `abc` → complaint about non‑numeric → re‑prompt.
-6. **Negative large number**: Input `-2000`, `5`, `-` → heavy‑number message → exit.
-
-### Acceptance Criteria
-- The program must pass all test cases described above.
-- All user‑visible strings must match the wording specified (or be a close synonym for the dramatic complaints).
-- Exiting codes: `0` for normal termination or heavy‑number case, `1` for division‑by‑zero refusal.
-- No external libraries beyond Python’s standard library are required.
-
-### Future Enhancements (Out of Scope)
-- Support for more operators (e.g., `%`, `**`).
-- Configurable list of dramatic complaints via a file.
-- Internationalization / localization of messages.
+IV. Expected Behavior
+1. Upon launch, the calculator will output a dramatic message expressing its 'dread' of being used for math.
+2. After each calculation, the calculator will output a dramatic message expressing its 'relief' that the task is complete, and ask the user if they wish to perform another calculation.

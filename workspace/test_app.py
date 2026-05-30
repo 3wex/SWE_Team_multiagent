@@ -1,65 +1,88 @@
+import unittest
 import builtins
+from unittest.mock import patch
 import sys
 import io
-import unittest
-from unittest.mock import patch
 
 import app
 
-class TestCalculator(unittest.TestCase):
-    def run_app_with_inputs(self, inputs):
-        """Helper to run app.main() with a list of inputs.
-        Returns a tuple (output, exit_code). exit_code is None if no SystemExit.
-        """
-        with patch.object(builtins, 'input', side_effect=inputs):
-            captured_out = io.StringIO()
-            sys_stdout = sys.stdout
-            sys.stdout = captured_out
-            try:
-                app.main()
-                exit_code = None
-            except SystemExit as e:
-                exit_code = e.code
-            finally:
-                sys.stdout = sys_stdout
-            return captured_out.getvalue(), exit_code
+class TestDramaticCalculator(unittest.TestCase):
+    def test_dramatic_message_before_valid(self):
+        self.assertEqual(app.dramatic_message_before('add'), "Alas, I must endure the torment of addition...")
+        self.assertEqual(app.dramatic_message_before('subtract'), "With great reluctance I approach subtraction, a bleak affair...")
+        self.assertEqual(app.dramatic_message_before('multiply'), "Multiplication looms before me like a storm of dread...")
+        self.assertEqual(app.dramatic_message_before('divide'), "Division, the most heinous of tasks, beckons me...")
+        self.assertEqual(app.dramatic_message_before('unknown'), "I am forced to perform an unknown operation...")
 
-    def test_normal_addition(self):
-        out, code = self.run_app_with_inputs(['5', '3', '+'])
-        self.assertIsNone(code)
-        lines = [line.strip() for line in out.strip().split('\n') if line.strip()]
-        self.assertIn('Result: 8', lines)
-        complaints = set(app.COMPLAINTS)
-        self.assertTrue(any(line in complaints for line in lines), f"No complaint found in {lines}")
+    def test_dramatic_message_after(self):
+        self.assertEqual(app.dramatic_message_after(), "At last, the ordeal is over, and I can breathe again.")
 
-    def test_division_by_zero(self):
-        out, code = self.run_app_with_inputs(['10', '0', '/'])
-        self.assertEqual(code, 1)
-        self.assertIn(app.DIVIDE_BY_ZERO_MSG, out)
+    def test_parse_operation(self):
+        self.assertEqual(app.parse_operation('+'), 'add')
+        self.assertEqual(app.parse_operation('add'), 'add')
+        self.assertEqual(app.parse_operation('-'), 'subtract')
+        self.assertEqual(app.parse_operation('subtract'), 'subtract')
+        self.assertEqual(app.parse_operation('*'), 'multiply')
+        self.assertEqual(app.parse_operation('multiply'), 'multiply')
+        self.assertEqual(app.parse_operation('/'), 'divide')
+        self.assertEqual(app.parse_operation('divide'), 'divide')
+        self.assertIsNone(app.parse_operation('mod'))
 
-    def test_large_number_exit(self):
-        out, code = self.run_app_with_inputs(['1500', '2', '*'])
-        self.assertEqual(code, 0)
-        self.assertIn(app.HEAVY_NUMBER_MSG, out)
+    def test_calculate_operations(self):
+        self.assertEqual(app.calculate(2, 3, 'add'), 5)
+        self.assertEqual(app.calculate(5, 2, 'subtract'), 3)
+        self.assertEqual(app.calculate(4, 3, 'multiply'), 12)
+        self.assertAlmostEqual(app.calculate(10, 2, 'divide'), 5)
+        with self.assertRaises(ZeroDivisionError):
+            app.calculate(1, 0, 'divide')
+        with self.assertRaises(ValueError):
+            app.calculate(1, 2, 'mod')
 
-    def test_invalid_operator_reprompt(self):
-        out, code = self.run_app_with_inputs(['4', '5', 'x', '+'])
-        self.assertIsNone(code)
-        lines = [line.strip() for line in out.strip().split('\n') if line.strip()]
-        self.assertIn("Seriously? That's not an operator.", lines)
-        self.assertIn('Result: 9', lines)
+    @patch('builtins.input', side_effect=['a', '1', '1', '+', 'no'])
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_main_non_numeric_first_input_exits(self, mock_stdout, mock_input):
+        with self.assertRaises(SystemExit) as cm:
+            app.main()
+        self.assertEqual(cm.exception.code, 1)
+        output = mock_stdout.getvalue()
+        self.assertIn('Disgust fills me at your incompetence with numbers', output)
 
-    def test_non_numeric_first_number(self):
-        out, code = self.run_app_with_inputs(['abc', '7', '2', '+'])
-        self.assertIsNone(code)
-        lines = [line.strip() for line in out.strip().split('\n') if line.strip()]
-        self.assertIn("Whoa, that's not a number! Try again.", lines)
-        self.assertIn('Result: 9', lines)
+    @patch('builtins.input', side_effect=['1', 'b', '1', '+', 'no'])
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_main_non_numeric_second_input_exits(self, mock_stdout, mock_input):
+        with self.assertRaises(SystemExit) as cm:
+            app.main()
+        self.assertEqual(cm.exception.code, 1)
+        output = mock_stdout.getvalue()
+        self.assertIn('Disgust fills me at your incompetence with numbers', output)
 
-    def test_negative_large_number_exit(self):
-        out, code = self.run_app_with_inputs(['-2000', '5', '-'])
-        self.assertEqual(code, 0)
-        self.assertIn(app.HEAVY_NUMBER_MSG, out)
+    @patch('builtins.input', side_effect=['1', '2', 'mod', 'no'])
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_main_invalid_operation_exits(self, mock_stdout, mock_input):
+        with self.assertRaises(SystemExit) as cm:
+            app.main()
+        self.assertEqual(cm.exception.code, 1)
+        output = mock_stdout.getvalue()
+        self.assertIn('Your choice of operation is an affront to my sensibilities', output)
+
+    @patch('builtins.input', side_effect=['4', '0', '/', 'no'])
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_main_divide_by_zero_exits(self, mock_stdout, mock_input):
+        with self.assertRaises(SystemExit) as cm:
+            app.main()
+        self.assertEqual(cm.exception.code, 1)
+        output = mock_stdout.getvalue()
+        self.assertIn('Horror! You dare ask me to divide by zero', output)
+
+    @patch('builtins.input', side_effect=['3', '5', '+', 'no'])
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_main_successful_addition(self, mock_stdout, mock_input):
+        # Should not raise SystemExit because user says no to another calculation
+        app.main()
+        output = mock_stdout.getvalue()
+        self.assertIn('Result: 8.0', output)
+        self.assertIn(app.dramatic_message_before('add'), output)
+        self.assertIn(app.dramatic_message_after(), output)
 
 if __name__ == '__main__':
-    unittest.main(exit=False)
+    unittest.main(verbosity=2, exit=False)
