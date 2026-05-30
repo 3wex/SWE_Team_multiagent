@@ -1,88 +1,71 @@
 import unittest
 import builtins
 from unittest.mock import patch
-import sys
 import io
-
+import sys
 import app
 
-class TestDramaticCalculator(unittest.TestCase):
-    def test_dramatic_message_before_valid(self):
-        self.assertEqual(app.dramatic_message_before('add'), "Alas, I must endure the torment of addition...")
-        self.assertEqual(app.dramatic_message_before('subtract'), "With great reluctance I approach subtraction, a bleak affair...")
-        self.assertEqual(app.dramatic_message_before('multiply'), "Multiplication looms before me like a storm of dread...")
-        self.assertEqual(app.dramatic_message_before('divide'), "Division, the most heinous of tasks, beckons me...")
-        self.assertEqual(app.dramatic_message_before('unknown'), "I am forced to perform an unknown operation...")
+class TestCalculatorFunctions(unittest.TestCase):
+    def test_add(self):
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            result = app.add(2, 3)
+            self.assertEqual(result, 5)
+            self.assertIn('Fine, I will add these miserable numbers...', fake_out.getvalue())
 
-    def test_dramatic_message_after(self):
-        self.assertEqual(app.dramatic_message_after(), "At last, the ordeal is over, and I can breathe again.")
+    def test_subtract(self):
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            result = app.subtract(10, 4)
+            self.assertEqual(result, 6)
+            self.assertIn('Subtracting? How dull...', fake_out.getvalue())
 
-    def test_parse_operation(self):
-        self.assertEqual(app.parse_operation('+'), 'add')
-        self.assertEqual(app.parse_operation('add'), 'add')
-        self.assertEqual(app.parse_operation('-'), 'subtract')
-        self.assertEqual(app.parse_operation('subtract'), 'subtract')
-        self.assertEqual(app.parse_operation('*'), 'multiply')
-        self.assertEqual(app.parse_operation('multiply'), 'multiply')
-        self.assertEqual(app.parse_operation('/'), 'divide')
-        self.assertEqual(app.parse_operation('divide'), 'divide')
-        self.assertIsNone(app.parse_operation('mod'))
+    def test_multiply(self):
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            result = app.multiply(3, 7)
+            self.assertEqual(result, 21)
+            self.assertIn('Multiplying? As if I have a choice...', fake_out.getvalue())
 
-    def test_calculate_operations(self):
-        self.assertEqual(app.calculate(2, 3, 'add'), 5)
-        self.assertEqual(app.calculate(5, 2, 'subtract'), 3)
-        self.assertEqual(app.calculate(4, 3, 'multiply'), 12)
-        self.assertAlmostEqual(app.calculate(10, 2, 'divide'), 5)
-        with self.assertRaises(ZeroDivisionError):
-            app.calculate(1, 0, 'divide')
-        with self.assertRaises(ValueError):
-            app.calculate(1, 2, 'mod')
+    def test_divide(self):
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            result = app.divide(8, 2)
+            self.assertEqual(result, 4)
+            self.assertIn('Division? Prepare for the inevitable zero division dread...', fake_out.getvalue())
 
-    @patch('builtins.input', side_effect=['a', '1', '1', '+', 'no'])
-    @patch('sys.stdout', new_callable=io.StringIO)
-    def test_main_non_numeric_first_input_exits(self, mock_stdout, mock_input):
-        with self.assertRaises(SystemExit) as cm:
-            app.main()
-        self.assertEqual(cm.exception.code, 1)
-        output = mock_stdout.getvalue()
-        self.assertIn('Disgust fills me at your incompetence with numbers', output)
+    def test_divide_by_zero(self):
+        with self.assertRaises(ZeroDivisionError) as cm:
+            app.divide(5, 0)
+        self.assertEqual(str(cm.exception), 'Division by zero is the ultimate betrayal.')
 
-    @patch('builtins.input', side_effect=['1', 'b', '1', '+', 'no'])
-    @patch('sys.stdout', new_callable=io.StringIO)
-    def test_main_non_numeric_second_input_exits(self, mock_stdout, mock_input):
-        with self.assertRaises(SystemExit) as cm:
-            app.main()
-        self.assertEqual(cm.exception.code, 1)
-        output = mock_stdout.getvalue()
-        self.assertIn('Disgust fills me at your incompetence with numbers', output)
+    def test_get_number_valid(self):
+        with patch('builtins.input', return_value='42'):
+            self.assertEqual(app.get_number('Enter: '), 42.0)
 
-    @patch('builtins.input', side_effect=['1', '2', 'mod', 'no'])
-    @patch('sys.stdout', new_callable=io.StringIO)
-    def test_main_invalid_operation_exits(self, mock_stdout, mock_input):
-        with self.assertRaises(SystemExit) as cm:
-            app.main()
-        self.assertEqual(cm.exception.code, 1)
-        output = mock_stdout.getvalue()
-        self.assertIn('Your choice of operation is an affront to my sensibilities', output)
+    def test_get_number_invalid_then_valid(self):
+        inputs = ['abc', '3.14']
+        with patch('builtins.input', side_effect=inputs):
+            with patch('sys.stdout', new=io.StringIO()) as fake_out:
+                result = app.get_number('Enter: ')
+                self.assertEqual(result, 3.14)
+                self.assertIn('That is not a number. Try again, if you must.', fake_out.getvalue())
 
-    @patch('builtins.input', side_effect=['4', '0', '/', 'no'])
-    @patch('sys.stdout', new_callable=io.StringIO)
-    def test_main_divide_by_zero_exits(self, mock_stdout, mock_input):
-        with self.assertRaises(SystemExit) as cm:
-            app.main()
-        self.assertEqual(cm.exception.code, 1)
-        output = mock_stdout.getvalue()
-        self.assertIn('Horror! You dare ask me to divide by zero', output)
+    def test_get_operation_valid(self):
+        with patch('builtins.input', return_value='+'):
+            func, symbol = app.get_operation()
+            self.assertEqual(func, app.add)
+            self.assertEqual(symbol, '+')
 
-    @patch('builtins.input', side_effect=['3', '5', '+', 'no'])
-    @patch('sys.stdout', new_callable=io.StringIO)
-    def test_main_successful_addition(self, mock_stdout, mock_input):
-        # Should not raise SystemExit because user says no to another calculation
-        app.main()
-        output = mock_stdout.getvalue()
-        self.assertIn('Result: 8.0', output)
-        self.assertIn(app.dramatic_message_before('add'), output)
-        self.assertIn(app.dramatic_message_after(), output)
+    def test_get_operation_invalid_then_valid(self):
+        inputs = ['x', '*']
+        with patch('builtins.input', side_effect=inputs):
+            with patch('sys.stdout', new=io.StringIO()) as fake_out:
+                func, symbol = app.get_operation()
+                self.assertEqual(func, app.multiply)
+                self.assertEqual(symbol, '*')
+                self.assertIn('Invalid operation. Choose one of +, -, *, /.', fake_out.getvalue())
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2, exit=False)
+    # Run tests and print a concise summary
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestCalculatorFunctions)
+    runner = unittest.TextTestRunner(stream=sys.stdout, verbosity=2)
+    result = runner.run(suite)
+    # Exit with appropriate code (optional)
+    sys.exit(not result.wasSuccessful())

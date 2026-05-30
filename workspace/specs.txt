@@ -1,18 +1,8 @@
-Specifications for Overly Dramatic Command-Line Calculator:
-
-I. Introduction
-The calculator will be a command-line application built in Python, designed to perform basic arithmetic operations (addition, subtraction, multiplication, and division) on two numbers.
-
-II. Functional Requirements
-1. The calculator will take two numbers and an operation as input from the user.
-2. It will then perform the specified operation and display the result.
-3. The calculator will express reluctance and dissatisfaction with performing math operations, using dramatic language to convey its 'distaste' for the task.
-4. For each operation, the calculator will output a unique, overly dramatic message before and after performing the calculation.
-
-III. Edge Cases
-1. Division by zero: The calculator will output a dramatic message expressing its 'horror' at being asked to perform such an 'atrocious' act, and then exit the program.
-2. Non-numeric input: The calculator will output a dramatic message expressing its 'disgust' at the user's 'incompetence', and then exit the program.
-
-IV. Expected Behavior
-1. Upon launch, the calculator will output a dramatic message expressing its 'dread' of being used for math.
-2. After each calculation, the calculator will output a dramatic message expressing its 'relief' that the task is complete, and ask the user if they wish to perform another calculation.
+The command-line calculator will be built in Python and will have the following features: 
+1. The calculator will have a dramatic introduction when the program starts, expressing its reluctance to perform math operations. 
+2. The calculator will have four main functions: addition, subtraction, multiplication, and division. 
+3. Each function will be accompanied by a dramatic message expressing the calculator's disdain for the operation it is about to perform. 
+4. The calculator will ask for user input for the two numbers and the operation to be performed. 
+5. The calculator will then perform the operation and display the result, along with another dramatic message. 
+6. The calculator will have error handling for invalid user input, such as non-numeric input or division by zero. 
+7. The calculator will have a dramatic farewell message when the program ends.
