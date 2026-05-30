@@ -22,9 +22,4 @@ The system relies on a shared memory dictionary (`TeamState`) and routes between
 * **LCEL Structured Output:** Guarantees type-safe graph routing by piping QA text evaluations into strict Pydantic schemas.
 * **Infinite Loop Protection:** Hard-capped iterations prevent the SWE and QA agents from getting stuck in endless debugging loops.
 
-## Usage
 
-Run the main orchestrator script:
-
-```bash
-python main.py
